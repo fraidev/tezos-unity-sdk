@@ -4,12 +4,15 @@ using System.Linq;
 using System.Text.Json;
 using Netezos.Contracts;
 using Netezos.Encoding;
+using Netezos.Forging.Models;
 using Newtonsoft.Json.Linq;
 using TezosSDK.Helpers;
 using TezosSDK.Tezos.API.Models.Abstract;
 using TezosSDK.Tezos.API.Models.Tokens;
 using UnityEngine;
 using TezosSDK.Tezos.API.Models.Filters;
+using TezosSDK.Tezos.Gas;
+using Operation = TezosSDK.Tezos.Gas.Operation;
 
 
 namespace TezosSDK.Tezos.API.Models
@@ -58,30 +61,60 @@ namespace TezosSDK.Tezos.API.Models
                 var tokenId = tokens?.Count() ?? 0;
                 const string entrypoint = "mint";
 
+                // var mintParameters = GetContractScript().BuildParameter(
+                //         entrypoint: entrypoint,
+                //         value: new
+                //         {
+                //             address = destination,
+                //             amount = amount.ToString(),
+                //             metadata = tokenMetadata.GetMetadataDict(),
+                //             token_id = tokenId.ToString()
+                //         })
+                //     .ToJson();
+                
+                
+                // var input = new MichelineString(destination);
+
+                var sender = destination;
+
+                var contract = "KT1UMxkM324nuYnDssv3z7L3obk262xN9CRC";
+
                 var mintParameters = GetContractScript().BuildParameter(
-                        entrypoint: entrypoint,
-                        value: new
-                        {
-                            address = destination,
-                            amount = amount.ToString(),
-                            metadata = tokenMetadata.GetMetadataDict(),
-                            token_id = tokenId.ToString()
-                        })
-                    .ToJson();
+                    entrypoint: entrypoint,
+                    value: destination);
+               
+                
+                var param = new Parameters
+                {
+                    Entrypoint = entrypoint,
+                    Value = mintParameters
+                }; 
 
                 TezosSingleton
                     .Instance
                     .Wallet
                     .MessageReceiver
                     .ContractCallCompleted += MintCompleted;
+                
+                var gasStation = new GasStation("http://127.0.0.1:8000/");
+                
+                var routine = gasStation.PostOperations<object>(sender, new List<Operation>()
+                {
+                    new()
+                    {
+                        destination = contract,
+                        parameters = param
+                    }   
+                });
+                CoroutineRunner.Instance.StartWrappedCoroutine(routine);
 
-                TezosSingleton
-                    .Instance
-                    .Wallet
-                    .CallContract(
-                        contractAddress: Address,
-                        entryPoint: entrypoint,
-                        input: mintParameters);
+                // TezosSingleton
+                //     .Instance
+                //     .Wallet
+                //     .CallContract(
+                //         contractAddress: Address,
+                //         entryPoint: entrypoint,
+                //         input: mintParameters);
             }
         }
 
