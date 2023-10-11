@@ -1,4 +1,6 @@
 using System;
+using Netezos.Contracts;
+using Netezos.Encoding;
 using TezosSDK.Tezos.API.Models.Tokens;
 
 namespace TezosSDK.Tezos.API.Models.Abstract
@@ -24,6 +26,13 @@ namespace TezosSDK.Tezos.API.Models.Abstract
             string destination,
             int amount);
 
+        // TODO: add doc
+        public IMicheline TransferParams(
+            string entrypoint,
+            string destination,
+            int tokenId,
+            int amount);
+
         /// <summary>
         /// Transfer token from current address to destination.
         /// </summary>
@@ -42,5 +51,7 @@ namespace TezosSDK.Tezos.API.Models.Abstract
         /// </summary>
         /// <param name="completedCallback">Executes after contract deployed with contract address.</param>
         void Deploy(Action<string> completedCallback);
+
+        public ContractScript GetContractScript();
     }
 }

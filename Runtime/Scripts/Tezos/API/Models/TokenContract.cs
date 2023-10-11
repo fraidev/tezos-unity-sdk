@@ -105,23 +105,19 @@ namespace TezosSDK.Tezos.API.Models
             CoroutineRunner.Instance.StartWrappedCoroutine(getOwnerTokensCoroutine);
         }
 
-        public void Transfer(
-            Action<string> completedCallback,
+        public IMicheline TransferParams(
+            string entrypoint,
             string destination,
             int tokenId,
             int amount)
         {
-            OnTransferCompleted = completedCallback;
-
             var activeAddress = TezosSingleton
                 .Instance
                 .Wallet
                 .GetActiveAddress();
 
-            const string entryPoint = "transfer";
-
-            var param = GetContractScript().BuildParameter(
-                entrypoint: entryPoint,
+            return GetContractScript().BuildParameter(
+                entrypoint: entrypoint,
                 value: new List<object>
                 {
                     new
@@ -137,7 +133,20 @@ namespace TezosSDK.Tezos.API.Models
                             }
                         }
                     }
-                }).ToJson();
+                });
+        }
+
+
+        public void Transfer(
+            Action<string> completedCallback,
+            string destination,
+            int tokenId,
+            int amount)
+        {
+            OnTransferCompleted = completedCallback;
+            const string entrypoint = "transfer";
+
+            var param = TransferParams(entrypoint, destination, tokenId, amount).ToJson();
 
             TezosSingleton
                 .Instance
@@ -150,7 +159,7 @@ namespace TezosSDK.Tezos.API.Models
                 .Wallet
                 .CallContract(
                     contractAddress: Address,
-                    entryPoint: entryPoint,
+                    entryPoint: entrypoint,
                     input: param);
         }
 
@@ -215,7 +224,7 @@ namespace TezosSDK.Tezos.API.Models
                         orderBy: new OriginatedContractsForOwnerOrder.Default(0)));
         }
 
-        private ContractScript GetContractScript()
+        public ContractScript GetContractScript()
         {
             var script = Resources
                 .Load<TextAsset>("Contracts/FA2TokenContract")

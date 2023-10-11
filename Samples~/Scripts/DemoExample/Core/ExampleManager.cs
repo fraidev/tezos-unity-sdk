@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using Beacon.Sdk.Beacon.Sign;
 using Netezos.Encoding;
+using Netezos.Forging.Models;
 using TezosSDK.Beacon;
 using TezosSDK.Helpers;
 using TezosSDK.Scripts.FileUploaders;
@@ -10,9 +11,11 @@ using TezosSDK.Scripts.IpfsUploader;
 using TezosSDK.Tezos;
 using TezosSDK.Tezos.API.Models;
 using TezosSDK.Tezos.API.Models.Tokens;
+using TezosSDK.Tezos.Gas;
 using TezosSDK.Tezos.Wallet;
 using UnityEngine;
 using Logger = TezosSDK.Helpers.Logger;
+using Operation = TezosSDK.Tezos.Gas.Operation;
 using Random = System.Random;
 
 namespace TezosSDK.Samples.DemoExample
@@ -22,11 +25,12 @@ namespace TezosSDK.Samples.DemoExample
         private string _networkRPC;
 
         private const string
-            contractAddress = "KT1WguzxyLmuKbJhz3jNuoRzzaUCncfp6PFE"; //"KT1DMWAeaP6wxKWPFDLGDkB7xUg563852AjD";
+            contractAddress = "KT1UMxkM324nuYnDssv3z7L3obk262xN9CRC"; //"KT1DMWAeaP6wxKWPFDLGDkB7xUg563852AjD";
 
         private const int softCurrencyID = 0;
 
         public ITezos Tezos { get; private set; }
+        public GasStation GasStation { get; private set; }
         public User CurrentUser { get; private set; }
 
         public ExampleManager()
@@ -37,6 +41,7 @@ namespace TezosSDK.Samples.DemoExample
         public void Init(Action<bool> callback = null)
         {
             Tezos = TezosSingleton.Instance;
+            GasStation = new GasStation("http://127.0.0.1:8000/");
             _networkRPC = TezosConfig.Instance.RpcBaseUrl;
         }
 
@@ -334,9 +339,13 @@ namespace TezosSDK.Samples.DemoExample
         {
             Debug.Log("Adding Item " + itemID + " to Market with the price of " + price);
 
-            const string entryPoint = "addToMarket";
+            const string entryPoint = "add_to_market";
 
-            var parameter = new MichelinePrim
+            var sender = Tezos.Wallet.GetActiveAddress();
+
+            var destination = Tezos.TokenContract.Address;
+
+            var input = new MichelinePrim
             {
                 Prim = PrimType.Pair,
                 Args = new List<IMicheline>
@@ -346,15 +355,50 @@ namespace TezosSDK.Samples.DemoExample
                         Prim = PrimType.Pair,
                         Args = new List<IMicheline>
                         {
-                            new MichelineInt(0), // (currency ID = 0) represents coins
-                            new MichelineInt(price),
+                            new MichelinePrim
+                            {
+                                Prim = PrimType.Pair,
+                                Args = new List<IMicheline>
+                                {
+                                    new MichelineString(sender), // (currency ID = 0) represents coins
+                                    new MichelineInt(itemID),
+                                }
+                            },
+                            new MichelineInt(0),
                         }
                     },
-                    new MichelineInt(itemID),
+                    new MichelineInt(price),
+                    // Add user address
+                    //  
                 }
-            }.ToJson();
+            };
 
-            Tezos.Wallet.CallContract(contractAddress, entryPoint, parameter, 0);
+            // Assign operation here instead call contract
+            // Tezos.Wallet.CallContract(contractAddress, entryPoint, parameter, 0);
+
+
+            var paramBuilded = Tezos.TokenContract.GetContractScript().BuildParameter(
+                entrypoint: entryPoint,
+                value: input);
+
+
+            var param = new Parameters()
+            {
+                Entrypoint = entryPoint,
+                Value = paramBuilded
+            };
+
+            var routine = GasStation.PostOperations<object>(sender, new List<Operation>()
+            {
+             new()
+             {
+                 destination = destination,
+                 parameters = param
+             }   
+            });
+            CoroutineRunner.Instance.StartWrappedCoroutine(routine);
+
+            // Call Gas station API then
 
 #if UNITY_IOS || UNITY_ANDROID
             Application.OpenURL("tezos://");
@@ -401,9 +445,74 @@ namespace TezosSDK.Samples.DemoExample
         public void GetCoins()
         {
             const string entryPoint = "login";
-            const string parameter = "{\"prim\": \"Unit\"}";
+            // const string parameter = "{\"prim\": \"Unit\"}";
 
-            Tezos.Wallet.CallContract(contractAddress, entryPoint, parameter, 0);
+            var sender = Tezos.Wallet.GetActiveAddress();
+
+            // var destination = Tezos.TokenContract.Address;
+            var destination = contractAddress;
+
+
+            // var input = new MichelineString(sender);
+
+            // var input = new MichelinePrim
+            // {
+            //     Prim = PrimType.address,
+            //     Args = new List<IMicheline>() {new MichelineString(sender)}
+            // }.ToJson();
+
+            // Assign operation here instead call contract
+            // Tezos.Wallet.CallContract(contractAddress, entryPoint, parameter, 0);
+
+            var input = new MichelineString(sender);
+
+            // var input = new MichelinePrim
+            // {
+            //     Prim = PrimType.address,
+            //     Args = new List<IMicheline>() {new MichelineString(sender)}
+            // }.ToJson();
+
+            // Assign operation here instead call contract
+            // Tezos.Wallet.CallContract(contractAddress, entryPoint, parameter, 0);
+
+
+            var paramBuilded = Tezos.TokenContract.GetContractScript().BuildParameter(
+                entrypoint: entryPoint,
+                value: sender);
+
+            var param = new Parameters
+            {
+                Entrypoint = entryPoint,
+                Value = paramBuilded
+            };
+            
+            // {
+            //     Source = sender,
+            //     Counter = 10000, //change it
+            //     GasLimit = 100_000,
+            //     Fee = 100_000,
+            //     StorageLimit = 257,
+            //     Destination = destination,
+            //     Parameters = new Parameters
+            //     {
+            //         Entrypoint = entryPoint,
+            //         Value = param
+            //     }
+            // };
+            
+            // var opSig = key.SignOperation(opBytes);
+            // var opHash = await rpc.Inject.Operation.PostAsync(opBytes.Concat((byte[])opSig));
+
+            var routine = GasStation.PostOperations<object>(sender, new List<Operation>()
+            {
+             new()
+             {
+                 destination = destination,
+                 parameters = param
+             }   
+            });
+            CoroutineRunner.Instance.StartWrappedCoroutine(routine);
+            // Tezos.Wallet.CallContract(contractAddress, entryPoint, parameter, 0);
 
 #if UNITY_IOS || UNITY_ANDROID
             Application.OpenURL("tezos://");

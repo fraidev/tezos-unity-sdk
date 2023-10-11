@@ -76,6 +76,11 @@ namespace TezosSDK.Helpers
                 Exception = e;
                 if (ErrorHandler == null)
                 {
+// #if UNITY_EDITOR
+                    Debug.LogException(e);           
+                    Debug.Log("Current object:");           
+                    Debug.Log(_targetCoroutine.Current);           
+// #endif
                     Debug.LogError($"Exception: {e.Message}");
                 }
                 else
@@ -115,7 +120,11 @@ namespace TezosSDK.Helpers
         public Coroutine StartWrappedCoroutine(IEnumerator coroutine)
         {
             return StartCoroutine(new CoroutineWrapper<object>(coroutine, null,
-                (exception) => Debug.LogError($"Exception on Coroutine: {exception.Message}")));
+                (exception) =>
+                {
+                    Debug.LogException(exception);
+                    Debug.LogError($"Exception on Coroutine: {exception.Message}");
+                }));
         }
 
         [Obsolete("StartCoroutineWrapper is obsolete and will be replaced by StartWrappedCoroutine in future releases")]

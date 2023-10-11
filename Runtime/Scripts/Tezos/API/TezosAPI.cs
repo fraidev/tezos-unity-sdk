@@ -21,6 +21,11 @@ namespace TezosSDK.Tezos.API
             Rpc = new Rpc(TezosConfig.Instance.RpcBaseUrl);
         }
 
+        public IEnumerator GetContractStorage<T>(string address)
+        {
+            return GetJson<T>($"/contracts/${address}/storage");
+        }
+
         public IEnumerator GetTezosBalance(Action<ulong> callback, string address)
         {
             var getBalanceRequest = Rpc.GetTzBalance<ulong>(address);

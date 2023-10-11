@@ -11,6 +11,13 @@ namespace TezosSDK.Tezos.API
     public interface ITezosAPI
     {
         /// <summary>
+        /// Returns the storage contract
+        /// </summary>
+        /// <param name="address">contract address</param>
+        /// <returns></returns>
+        public IEnumerator GetContractStorage<T>(string address);
+        
+        /// <summary>
         /// An IEnumerator for reading the account's balance
         /// Can be called in a StartCoroutine()
         /// </summary>
