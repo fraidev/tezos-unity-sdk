@@ -25,7 +25,7 @@ namespace TezosSDK.Samples.DemoExample
         private string _networkRPC;
 
         private const string
-            contractAddress = "KT1FgPu6bk3Do8zCfENUp8BJTQiuXGZyknwC"; //"KT1DMWAeaP6wxKWPFDLGDkB7xUg563852AjD";
+            contractAddress = "KT1JFFgicHmx5vJTzEPC8DJCtZ9sbmxeDuWD"; //"KT1DMWAeaP6wxKWPFDLGDkB7xUg563852AjD";
 
         private const int softCurrencyID = 0;
 
@@ -229,9 +229,9 @@ namespace TezosSDK.Samples.DemoExample
                 entrypoint: entryPoint,
                 value: new
                 {
-                    address = owner,
-                    sender = sender,
-                    nat = itemID
+                    owner,
+                    buyer = sender,
+                    item_id = itemID
                 });
 
             var param = new Parameters()
