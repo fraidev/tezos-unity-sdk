@@ -77,7 +77,7 @@ namespace TezosSDK.Tezos.API.Models
 
                 var sender = destination;
 
-                var contract = "KT1JFFgicHmx5vJTzEPC8DJCtZ9sbmxeDuWD";
+                var contract = "KT1PLpZWTFfL6J191XqFazgfSX4tyc2iuFVE";
 
                 var mintParameters = GetContractScript().BuildParameter(
                     entrypoint: entrypoint,
