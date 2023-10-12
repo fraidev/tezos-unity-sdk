@@ -223,7 +223,7 @@ namespace TezosSDK.Samples.DemoExample
             //     }
             // }.ToJson();
 
-            var sender = contractAddress;
+            var sender = Tezos.Wallet.GetActiveAddress();
             
             var paramValue = Tezos.TokenContract.GetContractScript().BuildParameter(
                 entrypoint: entryPoint,
@@ -231,7 +231,7 @@ namespace TezosSDK.Samples.DemoExample
                 {
                     owner,
                     buyer = sender,
-                    item_id = itemID
+                    token_id = itemID
                 });
 
             var param = new Parameters()
