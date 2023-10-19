@@ -8,6 +8,7 @@ using TezosSDK.Tezos.API.Models.Filters;
 using TezosSDK.Tezos.API.Models.Abstract;
 using TezosSDK.Tezos.Wallet;
 using UnityEngine;
+using TezosSDK.Tezos.Gas;
 
 namespace TezosSDK.Tezos
 {
@@ -22,6 +23,8 @@ namespace TezosSDK.Tezos
         public IWalletProvider Wallet { get; }
         public IFA2 TokenContract { get; set; }
 
+        public GasStation Station { get; set; }
+
         public Tezos()
         {
             var dataProviderConfig = new TzKTProviderConfig();
@@ -33,7 +36,7 @@ namespace TezosSDK.Tezos
             MessageReceiver.AccountConnected += _ =>
             {
                 TokenContract = PlayerPrefs.HasKey("CurrentContract:" + Wallet.GetActiveAddress())
-                    ? new TokenContract(PlayerPrefs.GetString("CurrentContract:" + Wallet.GetActiveAddress()))
+                    ? new TokenContract(PlayerPrefs.GetString("CurrentContract:" + Wallet.GetActiveAddress()), new GasStation(TezosConfig.Instance.GasStationUrl))
                     : new TokenContract();
             };
         }
