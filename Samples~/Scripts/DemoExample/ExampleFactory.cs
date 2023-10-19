@@ -1,3 +1,4 @@
+using Beacon.Sdk.Beacon.Permission;
 using UnityEngine;
 
 namespace TezosSDK.Samples.DemoExample
@@ -7,6 +8,18 @@ namespace TezosSDK.Samples.DemoExample
         public static ExampleFactory Instance;
         private IExampleManager _exampleManager = null;
 
+        [field: SerializeField]
+        private string contractAddress;
+
+        [field: SerializeField]
+        private string gasStationUrl;
+
+        [field: SerializeField]
+        private string rpcBaseUrl;
+
+        [field: SerializeField]
+        private NetworkType Network;
+
         private void Awake()
         {
             if (Instance == null)
@@ -14,7 +27,7 @@ namespace TezosSDK.Samples.DemoExample
             else if (Instance != this)
                 Destroy(this);
 
-            _exampleManager = new ExampleManager();
+            _exampleManager = new ExampleManager(contractAddress, gasStationUrl, rpcBaseUrl, Network);
             _exampleManager.Init();
         }
 

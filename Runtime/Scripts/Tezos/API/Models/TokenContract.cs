@@ -20,12 +20,20 @@ namespace TezosSDK.Tezos.API.Models
     public class TokenContract : IFA2
     {
         public string Address { get; set; }
+
+        public GasStation Station { get; set; }
         public int TokensCount { get; set; }
         public DateTime LastActivityTime { get; set; }
 
         private Action<TokenBalance> OnMintCompleted;
         private Action<string> OnTransferCompleted;
         private Action<string> OnDeployCompleted;
+
+        public TokenContract(string address, GasStation gasStation)
+        {
+            Address = address;
+            Station = gasStation;
+        }
 
         public TokenContract(string address)
         {
@@ -77,8 +85,6 @@ namespace TezosSDK.Tezos.API.Models
 
                 var sender = destination;
 
-                var contract = "KT1PLpZWTFfL6J191XqFazgfSX4tyc2iuFVE";
-
                 var mintParameters = GetContractScript().BuildParameter(
                     entrypoint: entrypoint,
                     value: destination);
@@ -96,13 +102,11 @@ namespace TezosSDK.Tezos.API.Models
                     .MessageReceiver
                     .ContractCallCompleted += MintCompleted;
                 
-                var gasStation = new GasStation("http://127.0.0.1:8000/");
-                
-                var routine = gasStation.PostOperations<object>(sender, new List<Operation>()
+                var routine = Station.PostOperations<object>(sender, new List<Operation>()
                 {
                     new()
                     {
-                        destination = contract,
+                        destination = Address,
                         parameters = param
                     }   
                 });

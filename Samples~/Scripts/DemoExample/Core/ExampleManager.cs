@@ -25,8 +25,8 @@ namespace TezosSDK.Samples.DemoExample
     {
         private string _networkRPC;
 
-        private const string
-            contractAddress = "KT1PLpZWTFfL6J191XqFazgfSX4tyc2iuFVE"; //"KT1DMWAeaP6wxKWPFDLGDkB7xUg563852AjD";
+        private string contractAddress;
+        private string gasStationUrl;
 
         private const int softCurrencyID = 0;
 
@@ -34,15 +34,18 @@ namespace TezosSDK.Samples.DemoExample
         public GasStation GasStation { get; private set; }
         public User CurrentUser { get; private set; }
 
-        public ExampleManager()
-        {
+        public ExampleManager(string contractAddress, string gasStationUrl, string rpcBaseUrl, NetworkType network)       {
+            this.contractAddress = contractAddress;
+            this.gasStationUrl = gasStationUrl;
+            TezosConfig.Instance.RpcBaseUrl = rpcBaseUrl;
+            TezosConfig.Instance.Network = network;
             CurrentUser = null;
         }
 
         public void Init(Action<bool> callback = null)
         {
             Tezos = TezosSingleton.Instance;
-            GasStation = new GasStation("http://127.0.0.1:8000/");
+            GasStation = new GasStation(gasStationUrl);
             _networkRPC = TezosConfig.Instance.RpcBaseUrl;
         }
 

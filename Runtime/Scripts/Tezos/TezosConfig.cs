@@ -12,7 +12,10 @@ namespace TezosSDK.Tezos
         public NetworkType Network { get; set; } = NetworkType.ghostnet;
 
         //public string RpcBaseUrl => $"https://rpc.{Network}.teztnets.xyz";
-        public string RpcBaseUrl => $"https://ghostnet.tezos.marigold.dev";
+        public string RpcBaseUrl { get; set; } = $"https://ghostnet.tezos.marigold.dev";
+
+        public string GasStationUrl { get; set; } = $"https://gas-station-api.gcp-npr.marigold.dev/";
+
         public int DefaultTimeoutSeconds => 45;
     }
 
